@@ -21,6 +21,9 @@ my ($import, $unimport, $init_meta) = Moose::Exporter->build_import_methods (
         'with_import',
         'with_unimport',
         'with_init_meta',
+        'with_meta_lookup',
+        'with_caller',
+        'role_metaroles',
         'isa',
     ],
     install   => [ 'unimport' ],
@@ -152,13 +155,41 @@ sub with_init_meta (&) {                 # ;
     my ($sub) = @_;
 
     require Sub::Name;
-    Sub::Name::subname 'init_meta', $sub;
+    Sub::Name::subname ('init_meta', $sub);
     install_into (export_params->{exporting_package}, 'init_meta', $sub);
 
     # my $current = export_params->{with_init_meta};
     # # 1: $sub; 2: wrapper
     # my $next = sub { uplevel 2, $current, @_ };
     # export_params->{with_init_meta} = sub { uplevel 1, $sub, $next, @_ };
+}
+
+sub with_meta_lookup (&) {
+    my ($sub) = @_;
+
+    export_params->{meta_lookup} = $sub;
+}
+
+sub role_metaroles {                     # ;
+    my (%hash) = @_;
+    return unless @_;
+
+    my $hash = export_params->{role_metaroles};
+
+    while (my ($key, $value) = each %hash) {
+        my @list = 'ARRAY' eq ref $value ? @$value : $value;
+        eval "use $_" for @list;
+        push @{ $hash->{$key} //= [] }, @list;
+    }
+}
+
+sub with_caller {                        # ; create and export with_caller
+    my ($name, $sub) = @_;
+
+    install_into (export_params->{exporting_package}, $name, $sub)
+      if $sub;
+
+    push @{ export_params->{with_caller} //= [] }, $name;
 }
 
 sub isa {                                # ;
