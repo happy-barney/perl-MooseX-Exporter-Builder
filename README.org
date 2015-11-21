@@ -1,0 +1,24 @@
+
+* MooseX::Exporter::Builder
+
+Wrapper around Moose::Exporter to avoid /code duplication/
+(creating sub and naming it in proper field)
+
+With [[https://metacpan.org/pod/Sub::Uplevel][Sub::Uplevel]] it also supports proper ~import~ and ~unimport~ chaining
+
+** Motivation
+
+I was bored with maintaining helpers and their registration using proper field.
+As *lazy programmer* I prefer typing everything just once:
+
+#+BEGIN_EXAMPLE
+as_is helper => sub {
+    my ($arg1, ...) = @_;
+    ...;
+};
+
+with_meta helper2 => sub {
+    my ($meta, $arg1, ...) = @_;
+    ...;
+};
+
