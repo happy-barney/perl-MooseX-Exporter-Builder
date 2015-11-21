@@ -157,11 +157,6 @@ sub with_init_meta (&) {                 # ;
     require Sub::Name;
     Sub::Name::subname ('init_meta', $sub);
     install_into (export_params->{exporting_package}, 'init_meta', $sub);
-
-    # my $current = export_params->{with_init_meta};
-    # # 1: $sub; 2: wrapper
-    # my $next = sub { uplevel 2, $current, @_ };
-    # export_params->{with_init_meta} = sub { uplevel 1, $sub, $next, @_ };
 }
 
 sub with_meta_lookup (&) {
@@ -197,10 +192,10 @@ sub isa {                                # ;
 
     my $constraint = Moose::Util::TypeConstraints::find_type_constraint ($type);
 
-    die "TODO: Constraint not found"
+    Moose->throw_error ("${constraint}: Type constraint not found")
       unless $constraint;
 
-    die "TODO: Invalid expression"
+    Moose->throw_error ("${constraint}: expression doesn't match"
       # Validate returns false on success, true on failed ...
       if $constraint->validate ($expression);
 }
@@ -222,7 +217,7 @@ MooseX::Exporter::Builder - Syntax sugar to build (and export) Moose helpers eve
    package My::MooseX;
    use MooseX::Exporter::Builder;
    use Other::Exporter qw( bar );
-   
+
    also 'Moose';
    as_is as => sub ($) { shift };
    with_meta foo => sub {
@@ -235,7 +230,7 @@ Same with plain Moose::Exporter
 
    package My::MooseX;
    use Moose::Exporter;
-   
+
    Moose::Exporter->build_import_methods (
        as_is     => [ 'as' ],
        with_meta => [ 'foo', 'bar' ],
